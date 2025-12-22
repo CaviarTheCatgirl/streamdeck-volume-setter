@@ -1,0 +1,53 @@
+{
+	"Name": "Volume Setter",
+	"Version": "1.0.0.0",
+	"Author": "CaviarTheCatgirl",
+	"Actions": [
+		{
+			"Name": "Volume Profile Toggle",
+			"UUID": "com.caviarthecatgirl.volume-setter.toggle",
+			"Icon": "imgs/plugin/volume-profile-toggle",
+			"Tooltip": "Toggle between two volume levels for an audio device.",
+			"PropertyInspectorPath": "ui/volume-setter.html",
+			"Controllers": [
+				"Keypad"
+			],
+			"States": [
+				{
+					"Image": "imgs/actions/volume-setter/1",
+					"TitleAlignment": "middle",
+					"FontSize": "12"
+				},
+				{   "Image": "imgs/actions/volume-setter/2",
+				    "TitleAlignment": "middle",
+					"FontSize": "12"
+			    }
+			]
+		}
+	],
+	"SupportedInMultiActions": true,
+	"Category": "Volume Setter",
+	"CategoryIcon": "imgs/plugin/category-icon",
+	"CodePath": "bin/plugin.js",
+	"Description": "A Plugin where you can change a Playback Device from one Volume Setting to a different one, persistent Button",
+	"Icon": "imgs/plugin/marketplace",
+	"SDKVersion": 3,
+	"Software": {
+		"MinimumVersion": "6.9"
+	},
+	"OS": [
+		{
+			"Platform": "mac",
+			"MinimumVersion": "12"
+		},
+		{
+			"Platform": "windows",
+			"MinimumVersion": "10"
+		}
+	],
+	"Nodejs": {
+		"Version": "20",
+		"Debug": "enabled"
+	},
+	"UUID": "com.caviarthecatgirl.volume-setter"
+}

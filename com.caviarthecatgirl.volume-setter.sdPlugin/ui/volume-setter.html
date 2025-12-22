@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Volume Profile Settings</title>
+  <link rel="stylesheet" href="css/sdpi.css">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: #d8d8d8;
+      font-size: 9pt;
+    }
+
+    .sdpi-wrapper {
+      padding: 0;
+      margin: 0;
+    }
+
+    .sdpi-item {
+      display: flex;
+      flex-direction: column;
+      padding: 12px 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .sdpi-item:last-child {
+      border-bottom: none;
+    }
+
+    .sdpi-item-label {
+      font-size: 9pt;
+      font-weight: 500;
+      color: #969696;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-size: 8pt;
+    }
+
+    .sdpi-item-value {
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      padding: 8px 10px;
+      color: #d8d8d8;
+      font-size: 9pt;
+      outline: none;
+      transition: all 0.15s ease;
+      width: 100%;
+    }
+
+    .sdpi-item-value:hover {
+      background: rgba(0, 0, 0, 0.3);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .sdpi-item-value:focus {
+      background: rgba(0, 0, 0, 0.4);
+      border-color: #0e99e0;
+      box-shadow: 0 0 0 2px rgba(14, 153, 224, 0.2);
+    }
+
+    .sdpi-item-value::placeholder {
+      color: #666;
+      opacity: 1;
+    }
+
+    .sdpi-item-value:invalid {
+      border-color: #ff4444;
+    }
+
+    input[type="number"] {
+      -moz-appearance: textfield;
+    }
+
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    .sdpi-item-child {
+      margin-top: 6px;
+      font-size: 8pt;
+      color: #666;
+      line-height: 1.4;
+    }
+
+    .info-section {
+      background: rgba(14, 153, 224, 0.08);
+      border-left: 3px solid #0e99e0;
+      padding: 12px 16px;
+      margin: 16px 20px;
+      border-radius: 4px;
+    }
+
+    .info-section-title {
+      font-weight: 600;
+      color: #0e99e0;
+      margin-bottom: 8px;
+      font-size: 9pt;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .info-section-content {
+      font-size: 8pt;
+      color: #a8a8a8;
+      line-height: 1.6;
+    }
+
+    .info-section-content strong {
+      color: #d8d8d8;
+      font-weight: 500;
+    }
+
+    .volume-preview {
+      display: flex;
+      gap: 12px;
+      margin-top: 8px;
+      padding: 10px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .volume-box {
+      flex: 1;
+      text-align: center;
+      padding: 8px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 3px;
+    }
+
+    .volume-box-label {
+      font-size: 7pt;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .volume-box-value {
+      font-size: 16pt;
+      font-weight: 600;
+      color: #0e99e0;
+    }
+
+    .profile-indicator {
+      display: inline-block;
+      padding: 2px 8px;
+      background: rgba(14, 153, 224, 0.15);
+      border: 1px solid rgba(14, 153, 224, 0.3);
+      border-radius: 3px;
+      font-size: 7pt;
+      color: #0e99e0;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 600;
+    }
+
+    .profile-indicator.unique {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.1);
+      color: #969696;
+    }
+
+    .profile-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sync-button {
+      padding: 4px 12px;
+      background: rgba(14, 153, 224, 0.2);
+      border: 1px solid rgba(14, 153, 224, 0.4);
+      border-radius: 3px;
+      color: #0e99e0;
+      font-size: 7pt;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .sync-button:hover {
+      background: rgba(14, 153, 224, 0.3);
+      border-color: rgba(14, 153, 224, 0.6);
+    }
+
+    .sync-button:active {
+      background: rgba(14, 153, 224, 0.4);
+      transform: scale(0.98);
+    }
+
+    .sync-button.syncing {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
+    .input-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .input-wrapper {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .icon-info {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      line-height: 14px;
+      text-align: center;
+      background: rgba(14, 153, 224, 0.2);
+      color: #0e99e0;
+      border-radius: 50%;
+      font-size: 10px;
+      font-weight: bold;
+    }
+
+    .image-upload-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .image-preview {
+      width: 72px;
+      height: 72px;
+      border-radius: 4px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .image-preview img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    .image-preview-empty {
+      color: #666;
+      font-size: 8pt;
+      text-align: center;
+      padding: 8px;
+    }
+
+    .image-upload-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex: 1;
+    }
+
+    .image-button {
+      padding: 6px 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      color: #d8d8d8;
+      font-size: 8pt;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      text-align: center;
+    }
+
+    .image-button:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .image-button.remove {
+      color: #ff6b6b;
+      border-color: rgba(255, 107, 107, 0.3);
+    }
+
+    .image-button.remove:hover {
+      background: rgba(255, 107, 107, 0.1);
+      border-color: rgba(255, 107, 107, 0.5);
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .image-filename {
+      font-size: 7pt;
+      color: #666;
+      margin-top: 4px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="sdpi-wrapper">
+    <!-- Profile ID Section -->
+    <div class="sdpi-item">
+      <div class="sdpi-item-label">
+        <div class="profile-header">
+          <span>Profile ID</span>
+          <span id="profileStatus" class="profile-indicator unique">Unique Button</span>
+          <button id="syncButton" class="sync-button" style="display: none;">Sync Now</button>
+        </div>
+      </div>
+      <input class="sdpi-item-value" id="profileId" type="text" 
+             placeholder="e.g., headphones, speakers">
+      <div class="sdpi-item-child">
+        Leave empty for independent buttons, or use the same ID to sync multiple buttons together
+      </div>
+    </div>
+
+    <!-- Device Name Section -->
+    <div class="sdpi-item">
+      <div class="sdpi-item-label">Audio Device Name *</div>
+      <input class="sdpi-item-value" id="deviceName" type="text" 
+             placeholder="e.g., Kopfhörer & Lautsprecher">
+      <div class="sdpi-item-child">
+        Must match exactly as shown in SoundVolumeView or Windows Sound Settings
+      </div>
+    </div>
+
+    <!-- Volume Levels Section -->
+    <div class="sdpi-item">
+      <div class="sdpi-item-label">Volume Level 1 *</div>
+      <div class="input-group">
+        <div class="input-wrapper">
+          <label style="font-size: 8pt; color: #666; margin-bottom: 4px;">Left (%)</label>
+          <input class="sdpi-item-value" id="volume1Left" type="number" 
+                 min="0" max="100" placeholder="0-100">
+        </div>
+        <div class="input-wrapper">
+          <label style="font-size: 8pt; color: #666; margin-bottom: 4px;">Right (%)</label>
+          <input class="sdpi-item-value" id="volume1Right" type="number" 
+                 min="0" max="100" placeholder="0-100">
+        </div>
+      </div>
+    </div>
+
+    <div class="sdpi-item">
+      <div class="sdpi-item-label">Volume Level 2 *</div>
+      <div class="input-group">
+        <div class="input-wrapper">
+          <label style="font-size: 8pt; color: #666; margin-bottom: 4px;">Left (%)</label>
+          <input class="sdpi-item-value" id="volume2Left" type="number" 
+                 min="0" max="100" placeholder="0-100">
+        </div>
+        <div class="input-wrapper">
+          <label style="font-size: 8pt; color: #666; margin-bottom: 4px;">Right (%)</label>
+          <input class="sdpi-item-value" id="volume2Right" type="number" 
+                 min="0" max="100" placeholder="0-100">
+        </div>
+      </div>
+      
+      <!-- Volume Preview -->
+      <div class="volume-preview" id="volumePreviewContainer" style="display: none;">
+        <div class="volume-box">
+          <div class="volume-box-label">State 1</div>
+          <div class="volume-box-value" id="preview1">-</div>
+        </div>
+        <div class="volume-box">
+          <div class="volume-box-label">State 2</div>
+          <div class="volume-box-value" id="preview2">-</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- State 1 Image Section -->
+    <div class="sdpi-item">
+      <div class="sdpi-item-label">State 1 Image (Optional)</div>
+      <div class="image-upload-container">
+        <div class="image-preview" id="imagePreview1">
+          <div class="image-preview-empty">No Image</div>
+        </div>
+        <div class="image-upload-actions">
+          <label for="imageInput1" class="image-button">Choose Image</label>
+          <button class="image-button remove" id="removeImage1" style="display: none;">Remove</button>
+        </div>
+      </div>
+      <div class="image-filename" id="imageFilename1"></div>
+      <input type="file" id="imageInput1" accept="image/*">
+      <div class="sdpi-item-child">
+        Upload a custom icon for State 1 (will sync across all buttons with same Profile ID)
+      </div>
+    </div>
+
+    <!-- State 2 Image Section -->
+    <div class="sdpi-item">
+      <div class="sdpi-item-label">State 2 Image (Optional)</div>
+      <div class="image-upload-container">
+        <div class="image-preview" id="imagePreview2">
+          <div class="image-preview-empty">No Image</div>
+        </div>
+        <div class="image-upload-actions">
+          <label for="imageInput2" class="image-button">Choose Image</label>
+          <button class="image-button remove" id="removeImage2" style="display: none;">Remove</button>
+        </div>
+      </div>
+      <div class="image-filename" id="imageFilename2"></div>
+      <input type="file" id="imageInput2" accept="image/*">
+      <div class="sdpi-item-child">
+        Upload a custom icon for State 2 (will sync across all buttons with same Profile ID)
+      </div>
+    </div>
+
+    <!-- Info Section -->
+    <div class="info-section">
+      <div class="info-section-title">
+        <span class="icon-info">i</span>
+        How It Works
+      </div>
+      <div class="info-section-content">
+        <strong>Profile Syncing:</strong> When multiple buttons share the same Profile ID, pressing any one of them will update all buttons with that ID. Images uploaded here will also sync across all buttons.<br><br>
+        <strong>Volume Toggle:</strong> Each press switches between Level 1 and Level 2. The button shows the current volume (or L/R balance if different).<br><br>
+        <strong>Custom Images:</strong> Upload images for each state. When synced, all buttons with the same Profile ID will share these images.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let websocket = null;
+    let uuid = null;
+    let actionInfo = {};
+    let settings = {};
+    let isLoadingSettings = false;
+    let saveTimeout = null;
+
+    function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, inActionInfo) {
+      uuid = inUUID;
+      actionInfo = JSON.parse(inActionInfo);
+      settings = actionInfo.payload.settings;
+      
+      websocket = new WebSocket('ws://127.0.0.1:' + inPort);
+      
+      websocket.onopen = function() {
+        const json = {
+          event: inRegisterEvent,
+          uuid: inUUID
+        };
+        websocket.send(JSON.stringify(json));
+        
+        loadSettings();
+      };
+      
+      websocket.onmessage = function(evt) {
+        const jsonObj = JSON.parse(evt.data);
+        if (jsonObj.event === 'didReceiveSettings') {
+          settings = jsonObj.payload.settings;
+          loadSettings();
+        } else if (jsonObj.event === 'sendToPropertyInspector') {
+          if (jsonObj.payload && jsonObj.payload.event === 'settingsSynced') {
+            settings = jsonObj.payload.settings;
+            loadSettings();
+          }
+        }
+      };
+    }
+
+    function loadSettings() {
+      isLoadingSettings = true;
+      
+      const profileId = settings.profileId || '';
+      const deviceName = settings.deviceName || '';
+      const volume1Left = settings.volume1Left;
+      const volume1Right = settings.volume1Right;
+      const volume2Left = settings.volume2Left;
+      const volume2Right = settings.volume2Right;
+
+      document.getElementById('profileId').value = profileId;
+      document.getElementById('deviceName').value = deviceName;
+      
+      document.getElementById('volume1Left').value = volume1Left !== undefined ? volume1Left : '';
+      document.getElementById('volume1Right').value = volume1Right !== undefined ? volume1Right : '';
+      document.getElementById('volume2Left').value = volume2Left !== undefined ? volume2Left : '';
+      document.getElementById('volume2Right').value = volume2Right !== undefined ? volume2Right : '';
+
+      // Load images using file:// protocol
+      if (settings.image1Path) {
+        displayImage('imagePreview1', settings.image1Path, 'imageFilename1');
+        document.getElementById('removeImage1').style.display = 'block';
+      } else {
+        clearImagePreview('imagePreview1', 'imageFilename1');
+        document.getElementById('removeImage1').style.display = 'none';
+      }
+
+      if (settings.image2Path) {
+        displayImage('imagePreview2', settings.image2Path, 'imageFilename2');
+        document.getElementById('removeImage2').style.display = 'block';
+      } else {
+        clearImagePreview('imagePreview2', 'imageFilename2');
+        document.getElementById('removeImage2').style.display = 'none';
+      }
+
+      updateProfileStatus(profileId);
+      updateVolumePreview(volume1Left, volume1Right, volume2Left, volume2Right);
+      
+      setTimeout(() => {
+        isLoadingSettings = false;
+      }, 100);
+    }
+
+    function displayImage(previewId, imagePath, filenameId) {
+      const preview = document.getElementById(previewId);
+      const filenameDiv = document.getElementById(filenameId);
+      preview.innerHTML = `<img src="file://${imagePath}" alt="Preview">`;
+      
+      // Show filename
+      const filename = imagePath.split(/[/\\]/).pop();
+      filenameDiv.textContent = filename;
+    }
+
+    function clearImagePreview(previewId, filenameId) {
+      const preview = document.getElementById(previewId);
+      const filenameDiv = document.getElementById(filenameId);
+      preview.innerHTML = '<div class="image-preview-empty">No Image</div>';
+      filenameDiv.textContent = '';
+    }
+
+    function updateProfileStatus(profileId) {
+      const statusElement = document.getElementById('profileStatus');
+      const syncButton = document.getElementById('syncButton');
+      
+      if (profileId && profileId.trim() !== '') {
+        statusElement.textContent = `Synced: ${profileId}`;
+        statusElement.className = 'profile-indicator';
+        syncButton.style.display = 'inline-block';
+      } else {
+        statusElement.textContent = 'Unique Button';
+        statusElement.className = 'profile-indicator unique';
+        syncButton.style.display = 'none';
+      }
+    }
+
+    function updateVolumePreview(vol1L, vol1R, vol2L, vol2R) {
+      const container = document.getElementById('volumePreviewContainer');
+      
+      if (vol1L !== undefined && vol1R !== undefined && vol2L !== undefined && vol2R !== undefined) {
+        container.style.display = 'flex';
+        
+        const preview1 = vol1L === vol1R ? `${vol1L}%` : `L${vol1L} R${vol1R}`;
+        const preview2 = vol2L === vol2R ? `${vol2L}%` : `L${vol2L} R${vol2R}`;
+        
+        document.getElementById('preview1').textContent = preview1;
+        document.getElementById('preview2').textContent = preview2;
+      } else {
+        container.style.display = 'none';
+      }
+    }
+
+    // Image upload handlers
+    document.getElementById('imageInput1').addEventListener('change', function(e) {
+      handleImageUpload(e, 'image1Path', 'imagePreview1', 'imageFilename1', 'removeImage1');
+    });
+
+    document.getElementById('imageInput2').addEventListener('change', function(e) {
+      handleImageUpload(e, 'image2Path', 'imagePreview2', 'imageFilename2', 'removeImage2');
+    });
+
+    document.getElementById('removeImage1').addEventListener('click', function() {
+      removeImage('image1Path', 'imagePreview1', 'imageFilename1', 'removeImage1');
+    });
+
+    document.getElementById('removeImage2').addEventListener('click', function() {
+      removeImage('image2Path', 'imagePreview2', 'imageFilename2', 'removeImage2');
+    });
+
+    function handleImageUpload(event, settingKey, previewId, filenameId, removeButtonId) {
+      const files = event.target.files;
+      if (!files || files.length === 0) return;
+
+      const file = files[0];
+      
+      // Get the file path - use file.path which is available in Electron/Stream Deck
+      let filePath = file.path || file.name;
+      
+      // Decode URL encoding if present
+      try {
+        filePath = decodeURIComponent(filePath);
+      } catch (e) {
+        console.log('Could not decode path:', e);
+      }
+      
+      console.log('Image selected:', filePath);
+      
+      if (filePath && filePath.length > 0) {
+        settings[settingKey] = filePath;
+        displayImage(previewId, filePath, filenameId);
+        document.getElementById(removeButtonId).style.display = 'block';
+        debouncedSave();
+      }
+      
+      // Clear the input
+      event.target.value = '';
+    }
+
+    function removeImage(settingKey, previewId, filenameId, removeButtonId) {
+      // Remove from settings object
+      delete settings[settingKey];
+      
+      // Clear preview
+      clearImagePreview(previewId, filenameId);
+      document.getElementById(removeButtonId).style.display = 'none';
+      
+      console.log('Removed image, settings now:', settings);
+      
+      // Save immediately (not debounced) to ensure it's cleared
+      saveSettings();
+    }
+    
+    // Auto-save on input with debouncing
+    document.getElementById('profileId').addEventListener('input', function() {
+      updateProfileStatus(this.value);
+      debouncedSave();
+    });
+
+    document.getElementById('deviceName').addEventListener('input', function() {
+      debouncedSave();
+    });
+
+    ['volume1Left', 'volume1Right', 'volume2Left', 'volume2Right'].forEach(id => {
+      document.getElementById(id).addEventListener('input', function() {
+        const v1L = parseIntOrUndefined(document.getElementById('volume1Left').value);
+        const v1R = parseIntOrUndefined(document.getElementById('volume1Right').value);
+        const v2L = parseIntOrUndefined(document.getElementById('volume2Left').value);
+        const v2R = parseIntOrUndefined(document.getElementById('volume2Right').value);
+        
+        updateVolumePreview(v1L, v1R, v2L, v2R);
+        debouncedSave();
+      });
+    });
+    
+    function parseIntOrUndefined(value) {
+      if (value === '' || value === null || value === undefined) {
+        return undefined;
+      }
+      const parsed = parseInt(value);
+      return isNaN(parsed) ? undefined : parsed;
+    }
+    
+    function debouncedSave() {
+      if (saveTimeout) {
+        clearTimeout(saveTimeout);
+      }
+      saveTimeout = setTimeout(() => {
+        saveSettings();
+      }, 500);
+    }
+    
+    document.getElementById('syncButton').addEventListener('click', function() {
+      if (saveTimeout) {
+        clearTimeout(saveTimeout);
+      }
+      
+      this.classList.add('syncing');
+      this.textContent = 'Syncing...';
+      
+      saveSettings();
+      
+      setTimeout(() => {
+        const json = {
+          event: 'getSettings',
+          context: uuid
+        };
+        websocket.send(JSON.stringify(json));
+      }, 200);
+      
+      setTimeout(() => {
+        this.classList.remove('syncing');
+        this.textContent = 'Sync Now';
+      }, 1000);
+    });
+    
+    function saveSettings() {
+      if (isLoadingSettings) {
+        return;
+      }
+      
+      const profileId = document.getElementById('profileId').value.trim();
+      const deviceName = document.getElementById('deviceName').value.trim();
+      const volume1Left = parseIntOrUndefined(document.getElementById('volume1Left').value);
+      const volume1Right = parseIntOrUndefined(document.getElementById('volume1Right').value);
+      const volume2Left = parseIntOrUndefined(document.getElementById('volume2Left').value);
+      const volume2Right = parseIntOrUndefined(document.getElementById('volume2Right').value);
+      
+      // Start with existing settings to preserve image paths
+      const newSettings = { ...settings };
+      
+      // Update basic settings
+      if (profileId) {
+        newSettings.profileId = profileId;
+      } else {
+        delete newSettings.profileId;
+      }
+      
+      if (deviceName) {
+        newSettings.deviceName = deviceName;
+      } else {
+        delete newSettings.deviceName;
+      }
+      
+      if (volume1Left !== undefined) {
+        newSettings.volume1Left = volume1Left;
+      } else {
+        delete newSettings.volume1Left;
+      }
+      
+      if (volume1Right !== undefined) {
+        newSettings.volume1Right = volume1Right;
+      } else {
+        delete newSettings.volume1Right;
+      }
+      
+      if (volume2Left !== undefined) {
+        newSettings.volume2Left = volume2Left;
+      } else {
+        delete newSettings.volume2Left;
+      }
+      
+      if (volume2Right !== undefined) {
+        newSettings.volume2Right = volume2Right;
+      } else {
+        delete newSettings.volume2Right;
+      }
+      
+      // Image paths are already in settings object from handleImageUpload
+      // No need to read from DOM
+      
+      // Update global settings
+      settings = newSettings;
+      
+      const json = {
+        event: 'setSettings',
+        context: uuid,
+        payload: settings
+      };
+      
+      console.log('Saving settings:', settings);
+      websocket.send(JSON.stringify(json));
+    }
+  </script>
+</body>
+</html>
