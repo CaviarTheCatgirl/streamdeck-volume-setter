@@ -2,9 +2,6 @@
 
 A Stream Deck plugin that allows you to quickly switch between two volume presets for any audio device, with per-channel (left/right) control and profile syncing across multiple buttons.
 
-![Plugin Demo](screenshots/demo.gif)
-*Optional: Add a demo GIF here later*
-
 ## Features
 
 - 🎚️ **Dual Volume Presets**: Toggle between two different volume levels with a single button press
