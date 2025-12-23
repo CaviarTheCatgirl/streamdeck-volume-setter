@@ -8,6 +8,8 @@ import streamDeck, {
 } from '@elgato/streamdeck';
 import { spawn } from 'child_process';
 import { join } from 'path';
+import { copyFileSync, existsSync, mkdirSync, unlinkSync } from 'fs';
+import { v4 as uuidv4 } from 'uuid';
 
 // Global state manager for profile synchronization
 interface VolumeProfile {
@@ -44,11 +46,58 @@ const profileContexts = new Map<string, Set<string>>();
 const actionSettings = new Map<string, ActionSettings>(); // Track all button settings
 let profilesLoaded = false; // Track if we've loaded from storage
 
+// Get the plugin's data directory
+const getPluginDataPath = () => {
+  const appData = process.env.APPDATA || process.env.HOME || '';
+  return join(appData, 'Elgato', 'StreamDeck', 'Plugins', 'com.caviarthecatgirl.volume-setter.sdPlugin', 'images');
+};
+
+// Ensure data directory exists
+const ensureDataDirectory = () => {
+  const dataPath = getPluginDataPath();
+  if (!existsSync(dataPath)) {
+    mkdirSync(dataPath, { recursive: true });
+  }
+  return dataPath;
+};
+
 @action({ UUID: 'com.caviarthecatgirl.volume-setter.toggle' })
 export class VolumeToggleAction extends SingletonAction<ActionSettings> {
 
   constructor() {
     super();
+    // Ensure data directory exists on plugin load
+    ensureDataDirectory();
+  }
+
+  // Copy image to plugin data folder and return new path
+  private copyImageToDataFolder(sourcePath: string): string {
+    try {
+      const dataPath = ensureDataDirectory();
+      const ext = sourcePath.substring(sourcePath.lastIndexOf('.'));
+      const newFileName = `${uuidv4()}${ext}`;
+      const destPath = join(dataPath, newFileName);
+      
+      copyFileSync(sourcePath, destPath);
+      streamDeck.logger.info(`Copied image from ${sourcePath} to ${destPath}`);
+      
+      return destPath;
+    } catch (error) {
+      streamDeck.logger.error(`Failed to copy image: ${error}`);
+      throw error;
+    }
+  }
+
+  // Delete image from plugin data folder
+  private deleteImageFromDataFolder(imagePath: string): void {
+    try {
+      if (existsSync(imagePath)) {
+        unlinkSync(imagePath);
+        streamDeck.logger.info(`Deleted image: ${imagePath}`);
+      }
+    } catch (error) {
+      streamDeck.logger.error(`Failed to delete image: ${error}`);
+    }
   }
 
   // Load profiles from persistent storage
@@ -234,7 +283,7 @@ export class VolumeToggleAction extends SingletonAction<ActionSettings> {
   }
 
   override async onDidReceiveSettings(ev: DidReceiveSettingsEvent<ActionSettings>): Promise<void> {
-    const settings = ev.payload.settings;
+    let settings = ev.payload.settings;
     const oldProfileId = this.getCurrentProfileId(ev.action.id);
     const newProfileId = settings.profileId || ev.action.id;
 
@@ -252,6 +301,51 @@ export class VolumeToggleAction extends SingletonAction<ActionSettings> {
 
     // Check if this is a real configuration (all required fields present)
     const isConfigured = this.isSettingsConfigured(settings);
+    
+    // Handle image updates - copy new images to data folder
+    
+    // Check if image1Path is a new upload (not in our data folder)
+    if (settings.image1Path && !settings.image1Path.includes(getPluginDataPath())) {
+      const oldImage = oldSettings?.image1Path;
+      try {
+        settings = { ...settings, image1Path: this.copyImageToDataFolder(settings.image1Path) };
+        // Delete old image if it exists and is in our data folder
+        if (oldImage && oldImage.includes(getPluginDataPath())) {
+          this.deleteImageFromDataFolder(oldImage);
+        }
+      } catch (error) {
+        streamDeck.logger.error(`Failed to process image1: ${error}`);
+        settings = { ...settings };
+        delete settings.image1Path;
+      }
+    }
+    
+    // Check if image2Path is a new upload
+    if (settings.image2Path && !settings.image2Path.includes(getPluginDataPath())) {
+      const oldImage = oldSettings?.image2Path;
+      try {
+        settings = { ...settings, image2Path: this.copyImageToDataFolder(settings.image2Path) };
+        // Delete old image if it exists and is in our data folder
+        if (oldImage && oldImage.includes(getPluginDataPath())) {
+          this.deleteImageFromDataFolder(oldImage);
+        }
+      } catch (error) {
+        streamDeck.logger.error(`Failed to process image2: ${error}`);
+        settings = { ...settings };
+        delete settings.image2Path;
+      }
+    }
+    
+    // Handle image deletions
+    if (!settings.image1Path && oldSettings?.image1Path && oldSettings.image1Path.includes(getPluginDataPath())) {
+      this.deleteImageFromDataFolder(oldSettings.image1Path);
+    }
+    if (!settings.image2Path && oldSettings?.image2Path && oldSettings.image2Path.includes(getPluginDataPath())) {
+      this.deleteImageFromDataFolder(oldSettings.image2Path);
+    }
+    
+    // Update stored settings with processed paths
+    actionSettings.set(ev.action.id, settings);
 
     if (!isConfigured) {
       // Incomplete settings - check if we should sync FROM an existing profile
@@ -383,15 +477,29 @@ export class VolumeToggleAction extends SingletonAction<ActionSettings> {
       profile.isConfigured = true;
       // Update image paths - including explicit removal
       if (settings.image1Path !== undefined) {
+        // If old image exists and is different, delete it
+        if (profile.image1Path && profile.image1Path !== settings.image1Path && profile.image1Path.includes(getPluginDataPath())) {
+          this.deleteImageFromDataFolder(profile.image1Path);
+        }
         profile.image1Path = settings.image1Path;
       } else if (settings.image1Path === undefined && oldSettings?.image1Path !== undefined) {
         // Image was explicitly removed
+        if (profile.image1Path && profile.image1Path.includes(getPluginDataPath())) {
+          this.deleteImageFromDataFolder(profile.image1Path);
+        }
         delete profile.image1Path;
       }
       if (settings.image2Path !== undefined) {
+        // If old image exists and is different, delete it
+        if (profile.image2Path && profile.image2Path !== settings.image2Path && profile.image2Path.includes(getPluginDataPath())) {
+          this.deleteImageFromDataFolder(profile.image2Path);
+        }
         profile.image2Path = settings.image2Path;
       } else if (settings.image2Path === undefined && oldSettings?.image2Path !== undefined) {
         // Image was explicitly removed
+        if (profile.image2Path && profile.image2Path.includes(getPluginDataPath())) {
+          this.deleteImageFromDataFolder(profile.image2Path);
+        }
         delete profile.image2Path;
       }
       streamDeck.logger.info(`Updated profile "${newProfileId}" (new master)`);

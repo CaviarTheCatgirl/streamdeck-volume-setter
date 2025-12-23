@@ -1,6 +1,6 @@
 {
 	"Name": "Volume Setter",
-	"Version": "1.0.0.0",
+	"Version": "1.1.0.0",
 	"Author": "CaviarTheCatgirl",
 	"Actions": [
 		{
@@ -15,17 +15,15 @@
 			"States": [
 				{
 					"Image": "imgs/actions/volume-setter/1",
-					"TitleAlignment": "middle",
-					"FontSize": "12"
+					"TitleAlignment": "middle"
 				},
-				{   "Image": "imgs/actions/volume-setter/2",
-				    "TitleAlignment": "middle",
-					"FontSize": "12"
-			    }
+				{
+					"Image": "imgs/actions/volume-setter/2",
+					"TitleAlignment": "middle"
+				}
 			]
 		}
 	],
-	"SupportedInMultiActions": true,
 	"Category": "Volume Setter",
 	"CategoryIcon": "imgs/plugin/category-icon",
 	"CodePath": "bin/plugin.js",
